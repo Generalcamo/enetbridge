@@ -1,0 +1,94 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+sourceCompatibility = targetCompatibility = "1.8" // Need this here so eclipse task generates correctly.
+compileJava {
+	sourceCompatibility = targetCompatibility = "1.8"
+}
+
+version = getVersion()
+group= "enetbridge" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "enetbridge"
+
+minecraft {
+	version = "1.10.2-12.18.3.2185"
+	runDir = "run"
+
+	// the mappings can be changed at any time, and must be in the following format.
+	// snapshot_YYYYMMDD   snapshot are built nightly.
+	// stable_#            stables are built at the discretion of the MCP team.
+	// Use non-default mappings at your own risk. they may not allways work.
+	// simply re-run your setup task after changing the mappings to update your workspace.
+	mappings = "snapshot_20161111"
+	// makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
+}
+
+repositories {
+	maven {
+		name = "ic2"
+		url = "http://maven.ic2.player.to/"
+	}
+}
+
+dependencies {
+	compile 'net.industrial-craft:industrialcraft-2:2.6.11-ex110:dev'
+}
+
+sourceSets {
+	api {
+		java {
+			//srcDir 'CoFHLib/src/main/java'
+			//// Note: If this doesn't work in Eclipse, add those as Resource Filters to the package, not as filters to the source set...
+			//exclude '**/cofh/lib/**'
+			//exclude '**cofh/**'
+			//exclude '**/IGeneratorParser.java'
+		}
+	}
+	main {
+		java {
+			srcDir 'src'
+		}
+		resources {
+			srcDir 'res'
+		}
+	}
+}
+
+processResources {
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+
+        // replace version and mcversion
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+def getVersion() {
+	String contents = file('src/enetbridge/EnetBridge.java').text
+	String version = (contents =~ 'VERSION\\s*=\\s*"(.+?)"')[0][1]
+	println 'Version '+version
+	return version
+}
+
